@@ -1,0 +1,142 @@
+services:
+  # 1. MySQL DB
+  mysql-container:
+    image: mysql:8.0.43
+    container_name: mysql-container
+    networks:
+      - roomincode-network
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      TZ: Asia/Seoul
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --lower_case_table_names=1
+    volumes:
+      - mysql_data:/var/lib/mysql # 도커 볼륨
+      - ./common/data/init:/docker-entrypoint-initdb.d/ # 컨테이너 초기화 폴더 연결
+    restart: always
+
+  # 2. Redis (캐싱 및 세션)
+  redis-container:
+    image: redis:7.2
+    container_name: redis-container
+    networks:
+      - roomincode-network
+    restart: always
+
+  qdrant-container:
+    image: qdrant/qdrant:latest
+    container_name: qdrant-container
+    ports:
+      - "6333:6333"
+    networks:
+      - roomincode-network
+    volumes:
+      # 호스트의 특정 경로와 컨테이너 내부 저장소 연결
+      - /home/ubuntu/app/qdrant_storage:/qdrant/storage
+    restart: always
+
+  # 3. AI Server (FastAPI) - 추가됨
+  ai-container:
+    build:
+      context: ./ai # 깃랩 루트 기준 ai 폴더
+      dockerfile: Dockerfile
+    container_name: ai-container
+    networks:
+      - roomincode-network
+    environment:
+      - DB_HOST=mysql-container
+      - DB_PORT=3306
+      - DB_USER=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_DATABASE}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL}
+      # 추가 필요한 변수들
+      - QDRANT_HOST=qdrant-container
+      - QDRANT_PORT=6333
+      - HF_TOKEN=${HF_TOKEN}
+    depends_on:
+      - mysql-container
+      - qdrant-container  # Qdrant 의존성 추가
+    restart: always
+
+
+  # 5. SpringBoot Backend
+  springboot-container:
+    build:
+      context: ./be
+      dockerfile: Dockerfile
+    container_name: springboot-container
+    networks:
+      - roomincode-network
+    # 애플리케이션에 주입할 환경 변수
+    environment:
+      # DB Connection
+      DB_URL: jdbc:mysql://mysql-container:3306/${DB_DATABASE}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      # Redis
+      SPRING_DATA_REDIS_HOST: redis-container
+      SPRING_DATA_REDIS_PORT: 6379
+
+      # AI Server 연동
+      AI_SERVER_URL: ${AI_URL}
+
+      # 기타 설정
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      FILE_UPLOAD_DIR: /app/uploads/
+      FRONT_BASE_URL: ${FRONT_BASE_URL}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+
+      # 실제 사용은 x
+      OPENVIDU_URL: ${OPENVIDU_URL}
+      OPENVIDU_SECRET: ${OPENVIDU_SECRET}
+
+      # JUDGE0 콜백 처리용
+      BASE_URL: ${BASE_URL}
+
+      JUDGE_URL: ${JUDGE_URL}
+
+      PAPAGO_CLIENT_ID : ${PAPAGO_CLIENT_ID}
+      PAPAGO_CLIENT_SECRET : ${PAPAGO_CLIENT_SECRET}
+      PAPAGO_URL : ${PAPAGO_URL}
+
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+
+    # 주의할 점 : Jenkins 유저에게 쓰기 권한 있어야 Permission Denied 발생 x
+    volumes:
+      - ./uploads:/app/uploads # EC2 uploads 폴더 : 컨테이너 내부 app/uploads 폴더
+    depends_on:
+      - mysql-container
+      - redis-container
+      - ai-container
+#      - openvidu-openvidu-server-1
+    restart: always
+
+  # 6. Vue.js Frontend (Nginx) - 추가됨
+  vue-container:
+    build:
+      context: ./fe # 깃랩 루트 기준 fe 폴더
+      dockerfile: Dockerfile
+    container_name: vue-container
+    networks:
+      - roomincode-network
+    restart: always
+
+networks:
+  roomincode-network:
+    external: true # 이미 존재하는 네트워크
+#    driver: bridge
+
+volumes:
+  mysql_data:

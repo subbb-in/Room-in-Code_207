@@ -1,0 +1,37 @@
+{
+  "hash": "953b0659",
+  "configHash": "967deb72",
+  "lockfileHash": "cce72cef",
+  "browserHash": "be546d53",
+  "optimized": {
+    "vue": {
+      "src": "../../node_modules/.pnpm/vue@3.5.27_typescript@5.9.3/node_modules/vue/dist/vue.runtime.esm-bundler.js",
+      "file": "vue.js",
+      "fileHash": "6d534cad",
+      "needsInterop": false
+    },
+    "pinia": {
+      "src": "../../node_modules/.pnpm/pinia@3.0.4_typescript@5.9.3_vue@3.5.27_typescript@5.9.3_/node_modules/pinia/dist/pinia.mjs",
+      "file": "pinia.js",
+      "fileHash": "1772bcb6",
+      "needsInterop": false
+    },
+    "pinia-plugin-persistedstate": {
+      "src": "../../node_modules/.pnpm/pinia-plugin-persistedstate_da67935d00da0892ff82b9c30eb87942/node_modules/pinia-plugin-persistedstate/dist/index.js",
+      "file": "pinia-plugin-persistedstate.js",
+      "fileHash": "1281f86f",
+      "needsInterop": false
+    },
+    "vue-router": {
+      "src": "../../node_modules/.pnpm/vue-router@4.6.4_vue@3.5.27_typescript@5.9.3_/node_modules/vue-router/dist/vue-router.mjs",
+      "file": "vue-router.js",
+      "fileHash": "a8f45e41",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-JAIH7YAY": {
+      "file": "chunk-JAIH7YAY.js"
+    }
+  }
+}

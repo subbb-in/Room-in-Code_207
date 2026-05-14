@@ -1,0 +1,46 @@
+@charset "utf-8";
+@import "tailwindcss";
+
+@font-face {
+  font-display: swap;
+  font-family: Pretendard;
+  src: url('../fonts/Pretendard-Regular.subset.woff2') format('woff2');
+}
+
+:root {
+  --ric-bg-body: #1b2542;
+  --ric-bg-card: #243758;
+  --ric-bg-card-mid: #2b4166;
+  --ric-bg-card-light: #375279;
+  --ric-bg-popover: #1e2f4b;
+
+  --ric-text-primary: #ffffff;
+  --ric-text-secondary: #f1f5f9;
+  --ric-text-tertiary: #e2e8f0;
+
+  --ric-color-primary: #38e1ff;
+  --ric-color-primary-hover: #8af0ff;
+  --ric-color-primary-pressed: #12cde6;
+  --rin-color-primary-hover: #8af0ff;
+}
+
+*, button, input, textarea {
+  font-family: Pretendard;
+}
+
+html, body {
+  background-color: var(--ric-bg-body);
+  background-image: linear-gradient(rgba(13, 204, 242, .05) 1px, transparent 1px), linear-gradient(90deg, rgba(13, 204, 242, .05) 1px, transparent 1px);
+  background-size: 2rem 2rem;
+  border-color: var(--color-slate-700);
+  color: #fff;
+  font-family: Pretendard;
+  font-size: 1rem;
+  user-select: none;
+}
+
+/* SCROLL-BAR */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--ric-text-secondary); border-radius: 3px; transition: background .3s; }
+::-webkit-scrollbar-thumb:hover { background: var(--ric-text-tertiary); }

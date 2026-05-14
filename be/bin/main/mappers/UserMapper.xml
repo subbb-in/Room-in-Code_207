@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hamcheese.roomincode.domain.user.dao.UserDao">
+
+
+
+    <!-- 2. 닉네임 중복 확인 -->
+    <select id="existsByNickname" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM user_profile_info WHERE nickname = #{nickname}
+    </select>
+
+    <!-- 3. 이메일 중복 확인 -->
+    <select id="existsByEmail" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM local WHERE email = #{email}
+    </select>
+
+    <!-- === 회원가입 프로세스 === -->
+
+    <update id="softDeleteUser" parameterType="com.hamcheese.roomincode.domain.user.dto.UserRequestDto$Delete">
+        UPDATE users u
+            JOIN local l ON u.user_id = l.user_id
+            SET u.is_deleted = true
+        WHERE u.user_id = #{userNo}
+          AND l.password = #{password} -- 비밀번호는 local 테이블에서 확인
+          AND u.is_deleted = false
+    </update>
+
+    <select id="findById" resultType="com.hamcheese.roomincode.domain.user.entity.UserEntity">
+        SELECT
+            u.user_id as userId,
+            l.email,
+            l.password
+        FROM users u
+                 JOIN local l ON u.user_id = l.user_id
+        WHERE l.user_id = #{id}
+          AND u.is_deleted = false
+    </select>
+
+    <select id="findByEmail" resultType="com.hamcheese.roomincode.domain.user.entity.UserEntity">
+        SELECT
+            u.user_id as userId,
+            l.email,
+            l.password
+        FROM users u
+                 JOIN local l ON u.user_id = l.user_id
+        WHERE l.email = #{email}
+          AND u.is_deleted = false
+    </select>
+
+    <!-- A. users 테이블 저장 -->
+    <!-- useGeneratedKeys로 DB가 만든 user_id를 dto의 userId 필드에 꽂아줍니다. -->
+    <insert id="saveUser" useGeneratedKeys="true" keyProperty="userId">
+        INSERT INTO users (joined_at, updated_at, login_type, is_deleted)
+        VALUES (NOW(), NULL, 'LOGIN', FALSE)
+    </insert>
+
+    <!-- B. local 테이블 저장 -->
+    <insert id="saveLocal">
+        INSERT INTO local (user_id, email, password)
+        VALUES (#{userId}, #{email}, #{password})
+    </insert>
+
+    <!-- C. user_profile_info 테이블 저장 -->
+    <!-- intro_text나 total_xp 등은 기본값 처리 -->
+    <insert id="saveProfile">
+        INSERT INTO user_profile_info (user_id, nickname, total_xp, intro_text)
+        VALUES (#{userId}, #{nickname}, 0, '안녕하세요! 반가워요.')
+    </insert>
+
+    <!-- 유저 프로파일 조회 및 수정 -->
+    <select id="findProfileByUserId" resultType="com.hamcheese.roomincode.domain.user.dto.UserProfileDto">
+        SELECT
+            up.user_id,
+            up.nickname,
+            up.profile_image_url,
+            up.intro_text,
+            up.total_xp,
+            l.email,
+            u.joined_at
+        FROM user_profile_info up
+                 JOIN users u ON up.user_id = u.user_id
+                 JOIN local l ON u.user_id = l.user_id
+        WHERE up.user_id = #{userId}
+    </select>
+
+    <!-- 회원의 기존 사진 조회 -->
+    <select id="getProfileImageUrlByUserId" resultType="string">
+        SELECT profile_image_url
+        FROM user_profile_info
+        WHERE user_id = #{userId}
+    </select>
+
+    <update id="updateProfile">
+        UPDATE user_profile_info
+        SET nickname = #{nickname},
+            profile_image_url = #{profileImageUrl},
+            intro_text = #{introText}
+        WHERE user_id = #{userId}
+    </update>
+
+    <update id="updatePassword">
+        UPDATE local
+        SET password = #{encodedPassword}
+        WHERE user_id = #{userId}
+    </update>
+
+    <!-- email로 userId 찾기 -->
+    <select id="findUserIdByEmail" resultType="java.lang.Long">
+        SELECT u.user_id
+        FROM users u
+        JOIN local l ON u.user_id = l.user_id
+        WHERE l.email = #{email}
+    </select>
+
+    <!-- userId로 유저의 존재 여부 찾기 -->
+    <select id="existsByUserId" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM local WHERE user_id = #{userId}
+    </select>
+
+    <!-- userId와 newPassword를 받아 해당 유저의 비밀번호 변경 -->
+    <update id="updatedPassword">
+        UPDATE local
+        SET password = #{password}
+        WHERE user_id = #{userId}
+    </update>
+
+</mapper>

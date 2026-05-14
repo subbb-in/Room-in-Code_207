@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hamcheese.roomincode.domain.match.dao.MatchDao">
+
+    <insert id="saveAiReport" parameterType="map">
+        INSERT INTO ai_reports (
+            history_id,
+            problem_title,
+            ai_feedback,
+            game_result,
+            graded_result,
+            created_at
+        ) VALUES (
+            (SELECT history_id 
+             FROM history
+             WHERE problem_id = #{problemId} AND user_id = #{userId}
+             LIMIT 1),
+            #{problemTitle},
+            #{aiFeedback},
+            #{gameResult},
+            #{gradedResult},
+            NOW()
+        )
+    </insert>
+
+    <insert id="saveHistory" parameterType="map" useGeneratedKeys="true" keyProperty="historyId" keyColumn="history_id">
+        INSERT INTO history (
+            user_id,
+            problem_id,
+            skill_id,
+            created_at
+        ) VALUES (#{userId},
+                  #{problemId},
+                  #{skillId},
+                  NOW()
+        )
+    </insert>
+
+</mapper>

@@ -1,0 +1,22 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      '@neoconfetti/vue':
+        specifier: ^2.2.1
+        version: 2.2.1
+
+packages:
+
+  '@neoconfetti/vue@2.2.1':
+    resolution: {integrity: sha512-GXe5XoHlMK8VIxmxKuAgF9QQwRoDLmtiwVhONA9rzF+zOLGfOVLxo4OEDZqU9F0gJkB7U23BLlGJ3ouOb+kguw==}
+
+snapshots:
+
+  '@neoconfetti/vue@2.2.1': {}

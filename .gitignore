@@ -1,0 +1,14 @@
+# Python 캐시 파일
+**/__pycache__/
+*.pyc
+
+# 로컬 DB 및 가상환경
+ai/chroma_db/
+.venv/
+ai/.env
+.env
+# 인텔리제이/파이참 설정
+.idea/
+
+# pem key 설정 
+common/key/

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hamcheese.roomincode.domain.problem.dao.ProblemDao">
+
+    <select id="findRandomProblem" resultType="com.hamcheese.roomincode.domain.problem.dto.Problem">
+        SELECT
+            p.problem_id as problemId,
+            p.question,
+            p.solutions,
+            p.difficulty,
+            p.source,
+            p.url,
+            p.time_limit as timeLimit,
+            p.memory_limit as memoryLimit,
+            p.input_output as inputOutput,
+            p.expected_aux_space as expectedAuxSpace,
+            p.expected_time_complexity as expectedTimeComplexity
+        FROM problems p
+        <if test="algorithm != null">
+            JOIN problem_skills ps ON p.problem_id = ps.problem_id
+            JOIN skills s ON ps.skill_id = s.skill_id
+        </if>
+        WHERE 1=1
+        <if test="difficulty != null">
+            AND p.difficulty = #{difficulty}
+        </if>
+        <if test="algorithm != null">
+            AND s.skill_name = #{algorithm}
+        </if>
+        ORDER BY RAND()
+        LIMIT 1
+    </select>
+
+    <select id="findHintsByProblemId" resultType="com.hamcheese.roomincode.domain.problem.dto.ProblemHint">
+        SELECT
+            hint_id as hintId,
+            sequence,
+            content,
+            problem_id as problemId
+        FROM problem_hints
+        WHERE problem_id = #{problemId}
+        ORDER BY sequence ASC
+    </select>
+
+    <select id="findById" resultType="com.hamcheese.roomincode.domain.problem.dto.Problem">
+        SELECT
+            question,
+            solutions,
+            difficulty,
+            source,
+            url,
+            time_limit,
+            memory_limit,
+            input_output,
+            expected_aux_space,
+            expected_time_complexity
+        FROM problems
+        WHERE problem_id = #{problemId}
+    </select>
+
+</mapper>
